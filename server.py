@@ -67,13 +67,16 @@ class Game:
         self.passwords = []
 
     def process_request(self, msg, password):
-        if msg == "login":
-            if not self.passwords.__contains__(password):
-                self.passwords.append(password)
-                return "success"
-            return "success"
-        if msg == "dickinball":
-            return "Yor'ure"
+        #if msg == "login":
+        #    if not self.passwords.__contains__(password):
+        #        self.passwords.append(password)
+        #        return "success"
+        #    return "success"
+        #if msg == "dickinball":
+        #    return "Yor'ure"
+        msg = msg.lower()
+        if msg == "hello":
+            return "Hi lmao"
         return "NCR"
 
 
