@@ -7,6 +7,8 @@ import base64
 import time
 import rsa
 import os
+from tkinter import *
+from tkinter import ttk
 
 
 # https://stackoverflow.com/questions/12524994/encrypt-and-decrypt-using-pycrypto-aes-256#comment80992309_21928790
@@ -52,8 +54,8 @@ class Client:
         self.host = host
         self.password = hashlib.sha3_224(password.encode()).digest()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print('connecting to %s port %s' % ('localhost', 42328))
-        self.socket.connect(('localhost', 42328))
+        print('connecting to %s port %s' % ('203.184.31.5', 34197))
+        self.socket.connect(('203.184.31.5', 34197))
 
     # Set up encryption
     def encryption_setup(self):  # Load public and private key
@@ -80,16 +82,68 @@ class Client:
         return client.encryptor.decrypt(self.socket.recv(16384))
 
 
-class game:
+class Game:
     def __init__(self):
-        pass
+        self.grid_size = 5  # map size x and y
+        self.tile_labels = {}
+        self.tile_icons = {}
+        self.tiles = {}
+        self.buttons = {}
+        self.message = None
+        self.data = None
+        self.root = Tk()
+        self.make_tile()
+        # send_ping = ttk.Button(self.tiles[0], text="Poke", command=self.poke)
+        # send_ping.grid()
+
+    def poke(self, send_column, send_row):
+        self.message = "clicked_on,{},{}".format(send_column, send_row)  # May contain 8192 bytes
+        print('sending "%s"' % self.message)
+        client.encrypt_and_send_msg(self.message)  # Message
+        self.data = client.receive_and_decrypt_msg_response()  # Response
+        print('received "%s"' % self.data)
+
+        msg = self.data.lower()
+        variables = []
+        command = ""
+        for letter in msg + ',':
+            if letter == ',':
+                variables.append(command)
+                command = ""
+            else:
+                command += letter
+        print(variables)
+        column = variables[1]
+        row = variables[2]
+
+        self.tiles[row] = ttk.LabelFrame(self.root, text="({}, {})".format(column, row))
+        self.tiles[row].grid(row=row, column=column, padx=1, pady=1, sticky="NSEW")
+        self.tile_icons[row + column * self.grid_size] = PhotoImage(file="red.png")
+        self.tile_labels[row + column * self.grid_size] = ttk.Button(self.tiles[row], image=self.tile_icons[
+            row + column * self.grid_size], command=lambda c=column, r=row: self.poke(c, r))
+        self.tile_labels[row + column * self.grid_size].grid(row=1, column=0, padx=0, pady=0, sticky="NSEW")
+
+    def make_tile(self):
+        for column in range(self.grid_size):
+            for row in range(self.grid_size):
+
+                self.tiles[row] = ttk.LabelFrame(self.root, text="({}, {})".format(column, row))
+                self.tiles[row].grid(row=row, column=column, padx=1, pady=1, sticky="NSEW")
+                # self.buttons[row] = ttk.Button(self.tiles[row], text="Poke", command=lambda c=column, r=row: self.poke(c, r))
+                # self.buttons[row].grid(row=0, column=0, padx=10, pady=10, sticky="NSEW")
+                self.tile_icons[row+column*self.grid_size] = PhotoImage(file="grass.png")
+                self.tile_labels[row+column*self.grid_size] = ttk.Button(self.tiles[row], image=self.tile_icons[row+column*self.grid_size], command=lambda c=column, r=row: self.poke(c, r))
+                self.tile_labels[row+column*self.grid_size].grid(row=1, column=0, padx=0, pady=0, sticky="NSEW")
+
+        self.root.mainloop()
 
 
 if __name__ == '__main__':
     client = Client()
     client.encryption_setup()
-    client.connect_server(host=('203.184.31.5', 34197), password="abc123")
+    client.connect_server(host=('203.184.31.5', 34197), password="joe")
     client.encryptor = AESCipher(str(client.password))
+    game = Game()
 
     try:  # Logic :D
         message = "login"  # May contain 8192 bytes
@@ -97,12 +151,12 @@ if __name__ == '__main__':
         client.encrypt_and_send_msg(message)  # Message
         data = client.receive_and_decrypt_msg_response()  # Response
         print('received "%s"' % data)
-        message = "dickinball"  # May contain 8192 bytes
+        message = "pg13"  # May contain 8192 bytes
         print('sending "%s"' % message)
         client.encrypt_and_send_msg(message)  # Message
         data = client.receive_and_decrypt_msg_response()  # Response
         print('received "%s"' % data)
-        message = "gay3"
+        message = "wot"
         print('sending "%s"' % message)
         client.encrypt_and_send_msg(message)  # Message
         data = client.receive_and_decrypt_msg_response()  # Response
@@ -110,3 +164,4 @@ if __name__ == '__main__':
     finally:
         print('closing socket')
         client.socket.close()
+
