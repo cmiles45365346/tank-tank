@@ -85,8 +85,6 @@ class Game:
             return "acknowledged"
         if msg == "hello":
             return "Hi lmao"
-        print(variables)
-        print(len(variables))
         if variables[0] == "clicked_on":
             return "clicked_on,{},{}".format(random.randint(0, 4), random.randint(0, 4))
         return "NCR"
