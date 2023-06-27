@@ -3,6 +3,7 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import threading
 import hashlib
+import random
 import socket
 import base64
 import time
@@ -67,16 +68,27 @@ class Game:
         self.passwords = []
 
     def process_request(self, msg, password):
-        #if msg == "login":
-        #    if not self.passwords.__contains__(password):
-        #        self.passwords.append(password)
-        #        return "success"
-        #    return "success"
-        #if msg == "dickinball":
-        #    return "Yor'ure"
         msg = msg.lower()
+        variables = []
+        command = ""
+        for letter in msg+',':
+            if letter == ',':
+                variables.append(command)
+                command = ""
+            else:
+                command += letter
+
+        if msg == "register":
+            if not self.passwords.__contains__(password):
+                self.passwords.append(password)
+                return "acknowledged"
+            return "acknowledged"
         if msg == "hello":
             return "Hi lmao"
+        print(variables)
+        print(len(variables))
+        if variables[0] == "clicked_on":
+            return "clicked_on,{},{}".format(random.randint(0, 4), random.randint(0, 4))
         return "NCR"
 
 
