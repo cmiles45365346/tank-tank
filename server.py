@@ -66,28 +66,41 @@ class Server:
 class Game:
     def __init__(self):
         self.passwords = []
+        self.tiles = {}
+        self.grid_size = 5  # map size x and y
+        self.make_map()
+
+    def make_map(self):
+        for column in range(self.grid_size):
+            for row in range(self.grid_size):
+                self.tiles[row + column * self.grid_size] = "grass"
 
     def process_request(self, msg, password):
         msg = msg.lower()
         variables = []
         command = ""
+        response = ""
         for letter in msg+',':
             if letter == ',':
                 variables.append(command)
                 command = ""
             else:
                 command += letter
-
-        if msg == "register":
-            if not self.passwords.__contains__(password):
-                self.passwords.append(password)
-                return "acknowledged"
-            return "acknowledged"
-        if msg == "hello":
-            return "Hi lmao"
-        if variables[0] == "clicked_on":
-            return "clicked_on,{},{}".format(random.randint(0, 4), random.randint(0, 4))
-        return "NCR"
+        for variable in range(len(variables)):
+            if variables[variable] == "register":
+                if not self.passwords.__contains__(password):
+                    self.passwords.append(password)
+                    response += "acknowledged" + ','
+                response += "acknowledged" + ','
+            if variables[variable] == "hello":
+                response += "Hi lmao" + ','
+            if variables[variable] == "clicked_on":
+                response += "clicked_on,{},{}".format(random.randint(0, 4), random.randint(0, 4)) + ','
+            if variables[variable] == "map":
+                for column in range(self.grid_size):
+                    for row in range(self.grid_size):
+                        response += "map," + self.tiles[row + column * self.grid_size] + ','
+        return response
 
 
 class ServerThread(threading.Thread):
