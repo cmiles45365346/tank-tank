@@ -107,6 +107,7 @@ class Game:
                     for row in range(self.grid_size):
                         response += "map," + str(column) + "," + str(row) + "," + self.tiles[row + column * self.grid_size] + ','
             if variables[variable] == "points":
+                pass
         return response
 
 
