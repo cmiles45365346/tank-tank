@@ -66,7 +66,11 @@ class Server:
 class Game:
     def __init__(self):
         self.passwords = []
+        self.usernames = {}
+        self.points = {}
+        self.health = {}
         self.tiles = {}
+        self.daily_points = 1
         self.grid_size = 5  # map size x and y
         self.make_map()
 
@@ -90,16 +94,19 @@ class Game:
             if variables[variable] == "register":
                 if not self.passwords.__contains__(password):
                     self.passwords.append(password)
+                    self.points[password] = 0
+                    self.health[password] = 3
                     response += "acknowledged" + ','
                 response += "acknowledged" + ','
             if variables[variable] == "hello":
                 response += "Hi lmao" + ','
             if variables[variable] == "clicked_on":
-                response += "clicked_on,{},{}".format(random.randint(0, 4), random.randint(0, 4)) + ','
+                response += "clicked_on,{},{}".format(variables[variable+1], variables[variable+2]) + ','
             if variables[variable] == "map":
                 for column in range(self.grid_size):
                     for row in range(self.grid_size):
-                        response += "map," + self.tiles[row + column * self.grid_size] + ','
+                        response += "map," + str(column) + "," + str(row) + "," + self.tiles[row + column * self.grid_size] + ','
+            if variables[variable] == "points":
         return response
 
 
