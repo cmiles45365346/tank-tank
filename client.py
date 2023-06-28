@@ -54,8 +54,8 @@ class Client:
         self.host = host
         self.password = hashlib.sha3_224(password.encode()).digest()
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print('connecting to %s port %s' % ('203.184.31.5', 34197))
-        self.socket.connect(('203.184.31.5', 34197))
+        print('connecting to %s port %s' % (host[0], host[1]))
+        self.socket.connect((host[0], host[1]))
 
     # Set up encryption
     def encryption_setup(self):  # Load public and private key
@@ -79,11 +79,17 @@ class Client:
         self.socket.sendall(self.encrypt_msg(msg=self.password) + self.encryptor.encrypt(msg))
 
     def receive_and_decrypt_msg_response(self):
-        return client.encryptor.decrypt(self.socket.recv(16384))
+        return self.encryptor.decrypt(self.socket.recv(16384))
 
 
 class Game:
     def __init__(self):
+        self.server_list = None
+        self.server_ips = None
+        self.client = None
+        self.server_port = None
+        self.server_ip = None
+        self.menu_frame = None
         self.grid_size = 5  # map size x and y
         self.tile_labels = {}
         self.tile_icons = {}
@@ -92,9 +98,30 @@ class Game:
         self.message = None
         self.data = None
         self.root = Tk()
+        self.main_menu()
+
+    def main_menu(self):
+        self.server_ips = {"localhost": 34197, "127.0.0.1": 34197}
+        self.menu_frame = ttk.LabelFrame(self.root, text="game")
+        self.menu_frame.grid()
+        join_button = ttk.Button(self.menu_frame, text="join", command=self.join_game)
+        join_button.grid()
+        selected_server = StringVar()
+        selected_server.set(list(self.server_ips.keys())[0])
+        self.server_list = ttk.Combobox(self.menu_frame, textvariable=selected_server, state="readonly")
+        self.server_list['values'] = list(self.server_ips)
+        self.server_list.grid()
+        self.root.mainloop()
+
+    def join_game(self):
+        self.server_ip = self.server_list.get()
+        self.server_port = self.server_ips.get(self.server_list.get())
+        client.encryption_setup()
+        client.connect_server(host=(self.server_ip, self.server_port), password="joe")
+        client.encryptor = AESCipher(str(client.password))
+        # client.socket.close()  # close connection
+        self.menu_frame.destroy()
         self.make_tile()
-        # send_ping = ttk.Button(self.tiles[0], text="Poke", command=self.poke)
-        # send_ping.grid()
 
     def poke(self, send_column, send_row):
         self.message = "clicked_on,{},{}".format(send_column, send_row)  # May contain 8192 bytes
@@ -129,8 +156,6 @@ class Game:
 
                 self.tiles[row] = ttk.LabelFrame(self.root, text="({}, {})".format(column, row))
                 self.tiles[row].grid(row=row, column=column, padx=1, pady=1, sticky="NSEW")
-                # self.buttons[row] = ttk.Button(self.tiles[row], text="Poke", command=lambda c=column, r=row: self.poke(c, r))
-                # self.buttons[row].grid(row=0, column=0, padx=10, pady=10, sticky="NSEW")
                 self.tile_icons[row+column*self.grid_size] = PhotoImage(file="grass.png")
                 self.tile_labels[row+column*self.grid_size] = ttk.Button(self.tiles[row], image=self.tile_icons[row+column*self.grid_size], command=lambda c=column, r=row: self.poke(c, r))
                 self.tile_labels[row+column*self.grid_size].grid(row=1, column=0, padx=0, pady=0, sticky="NSEW")
@@ -140,28 +165,5 @@ class Game:
 
 if __name__ == '__main__':
     client = Client()
-    client.encryption_setup()
-    client.connect_server(host=('203.184.31.5', 34197), password="joe")
-    client.encryptor = AESCipher(str(client.password))
     game = Game()
-
-    try:  # Logic :D
-        message = "login"  # May contain 8192 bytes
-        print('sending "%s"' % message)
-        client.encrypt_and_send_msg(message)  # Message
-        data = client.receive_and_decrypt_msg_response()  # Response
-        print('received "%s"' % data)
-        message = "pg13"  # May contain 8192 bytes
-        print('sending "%s"' % message)
-        client.encrypt_and_send_msg(message)  # Message
-        data = client.receive_and_decrypt_msg_response()  # Response
-        print('received "%s"' % data)
-        message = "wot"
-        print('sending "%s"' % message)
-        client.encrypt_and_send_msg(message)  # Message
-        data = client.receive_and_decrypt_msg_response()  # Response
-        print('received "%s"' % data)
-    finally:
-        print('closing socket')
-        client.socket.close()
 
