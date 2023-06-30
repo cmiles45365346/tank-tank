@@ -93,8 +93,7 @@ class Game:
         for item in range(len(command_chain)):  # Start processing command_chain here
             if command_chain[item] == "map_u":  # Map update
                 response += "map_u," + str(command_chain[item + 1]) + "," + str(command_chain[item + 2]) + "," + \
-                            self.tiles[
-                                command_chain[item + 1] + command_chain[item + 2] * self.grid_size] + ','
+                            self.tiles[command_chain[item + 1] + command_chain[item + 2] * self.grid_size] + ','
             elif command_chain[item] == "clicked_on":
                 response += "clicked_on,{},{}".format(command_chain[item + 1], command_chain[item + 2]) + ','
             elif command_chain[item] == "points":
@@ -106,7 +105,7 @@ class Game:
                     self.health[username] = 3
                     response += "acknowledged" + ','
                 response += "acknowledged" + ','
-            elif command_chain[item] == "mapSize":
+            elif command_chain[item] == "map_size":
                 response += str(self.grid_size) + ','
         return response  # What client sees
 
@@ -118,7 +117,7 @@ register === player_register === registers a players username with the server
 Use: Must be the first message sent to the server if you wish to do anything privileged
 
 map_u === map_update === grabs a map tile from the server
-client_send: "map_u,x,y"
+client send: "map_u,x,y"
 Server send: "map_u,x,y,tile_name"
 
 self.usernames === usernames === A Unique identifier for each client based on the sha3_224 hash of their password.
