@@ -118,7 +118,8 @@ register === player_register === registers a players username with the server
 Use: Must be the first message sent to the server if you wish to do anything privileged
 
 map_u === map_update === grabs a map tile from the server
-Example: "map_u,x,y,tile_name"
+client_send: "map_u,x,y"
+Server send: "map_u,x,y,tile_name"
 
 self.usernames === usernames === A Unique identifier for each client based on the sha3_224 hash of their password.
 
