@@ -110,7 +110,7 @@ class Game:
                             row + column * self.grid_size] + ','
             if variables[variable] == "points":
                 pass
-        return response
+        return response  # What client sees
 
 
 class ServerThread(threading.Thread):
