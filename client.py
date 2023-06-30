@@ -119,9 +119,9 @@ class Game:
         client.encryption_setup()
         client.connect_server(host=(self.server_ip, self.server_port), password="joe")
         client.encryptor = AESCipher(str(client.password))
-        # client.socket.close()  # close connection
+        # client.socket.close()
         self.menu_frame.destroy()
-        self.make_tile()
+        self.generate_map()
 
     def poke(self, send_column, send_row):
         self.message = "clicked_on,{},{}".format(send_column, send_row)  # May contain 8192 bytes
@@ -150,7 +150,7 @@ class Game:
             row + column * self.grid_size], command=lambda c=column, r=row: self.poke(c, r))
         self.tile_labels[row + column * self.grid_size].grid(row=1, column=0, padx=0, pady=0, sticky="NSEW")
 
-    def make_tile(self):
+    def generate_map(self):
         for column in range(self.grid_size):
             for row in range(self.grid_size):
 
@@ -160,7 +160,11 @@ class Game:
                 self.tile_labels[row+column*self.grid_size] = ttk.Button(self.tiles[row], image=self.tile_icons[row+column*self.grid_size], command=lambda c=column, r=row: self.poke(c, r))
                 self.tile_labels[row+column*self.grid_size].grid(row=1, column=0, padx=0, pady=0, sticky="NSEW")
 
-        self.root.mainloop()
+        def receiver():
+            print("hello")
+            self.root.after(100, receiver)
+
+        receiver()
 
 
 if __name__ == '__main__':
