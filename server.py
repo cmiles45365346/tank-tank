@@ -62,6 +62,7 @@ class Server:
         except Exception as e:
             print("Failure occurred: {}".format(e))
 
+
 # Stuff you read
 class Game:
     def __init__(self):
@@ -84,7 +85,7 @@ class Game:
         variables = []
         command = ""
         response = ""
-        for letter in msg+',':
+        for letter in msg + ',':
             if letter == ',':
                 variables.append(command)
                 command = ""
@@ -101,11 +102,12 @@ class Game:
             if variables[variable] == "hello":
                 response += "Hi lmao" + ','
             if variables[variable] == "clicked_on":
-                response += "clicked_on,{},{}".format(variables[variable+1], variables[variable+2]) + ','
+                response += "clicked_on,{},{}".format(variables[variable + 1], variables[variable + 2]) + ','
             if variables[variable] == "map":
                 for column in range(self.grid_size):
                     for row in range(self.grid_size):
-                        response += "map," + str(column) + "," + str(row) + "," + self.tiles[row + column * self.grid_size] + ','
+                        response += "map," + str(column) + "," + str(row) + "," + self.tiles[
+                            row + column * self.grid_size] + ','
             if variables[variable] == "points":
                 pass
         return response
