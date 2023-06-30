@@ -106,7 +106,7 @@ class Game:
                     response += "acknowledged" + ','
                 response += "acknowledged" + ','
             elif command_chain[item] == "map_size":
-                response += str(self.grid_size) + ','
+                response += "map_size," + str(self.grid_size) + ','
         return response  # What client sees
 
 
