@@ -179,7 +179,7 @@ if __name__ == '__main__':
     tcpsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     tcpsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
-    tcpsock.bind(('192.168.1.15', 34197))
+    tcpsock.bind((input("IP: "), 34197))
     threads = []
     while True:
         tcpsock.listen(4)
