@@ -90,15 +90,33 @@ class Game:
         self.server_port = None
         self.server_ip = None
         self.menu_frame = None
-        self.grid_size = 5  # map size x and y
+        self.grid_size = None  # exists to be set later on
         self.tile_labels = {}
         self.tile_icons = {}
         self.tiles = {}
         self.buttons = {}
-        self.message = None
-        self.data = None
         self.root = Tk()
         self.main_menu()
+
+    def process_response(self, response):
+        command_chain = []
+        command = ""
+        for letter in response + ',':
+            if letter == ',':
+                command_chain.append(command)
+                command = ""
+            else:
+                command += letter
+        return command_chain
+
+    def send_request(self, message):
+        request = str(message)  # May contain 8192 bytes
+        print('sending "%s"' % request)
+        client.encrypt_and_send_msg(request)  # Message
+        response = client.receive_and_decrypt_msg_response()  # Response
+        print('received "%s"' % response)
+        command_chain = self.process_response(response)
+        return command_chain
 
     def main_menu(self):
         self.server_ips = {"localhost": 34197, "127.0.0.1": 34197}
@@ -119,30 +137,15 @@ class Game:
         client.encryption_setup()
         client.connect_server(host=(self.server_ip, self.server_port), password="joe")
         client.encryptor = AESCipher(str(client.password))
+        self.grid_size = int(self.send_request("map_size")[1])  # clears the comma for this specific scenario for the int()
         # client.socket.close()
         self.menu_frame.destroy()
         self.generate_map()
 
     def poke(self, send_column, send_row):
-        self.message = "clicked_on,{},{}".format(send_column, send_row)  # May contain 8192 bytes
-        print('sending "%s"' % self.message)
-        client.encrypt_and_send_msg(self.message)  # Message
-        self.data = client.receive_and_decrypt_msg_response()  # Response
-        print('received "%s"' % self.data)
-
-        msg = self.data.lower()
-        variables = []
-        command = ""
-        for letter in msg + ',':
-            if letter == ',':
-                variables.append(command)
-                command = ""
-            else:
-                command += letter
-        print(variables)
-        column = variables[1]
-        row = variables[2]
-
+        message = self.send_request("clicked_on,{},{}".format(send_column, send_row))
+        column = int(message[1])
+        row = int(message[2])
         self.tiles[row] = ttk.LabelFrame(self.root, text="({}, {})".format(column, row))
         self.tiles[row].grid(row=row, column=column, padx=1, pady=1, sticky="NSEW")
         self.tile_icons[row + column * self.grid_size] = PhotoImage(file="red.png")
@@ -153,17 +156,23 @@ class Game:
     def generate_map(self):
         for column in range(self.grid_size):
             for row in range(self.grid_size):
-
                 self.tiles[row] = ttk.LabelFrame(self.root, text="({}, {})".format(column, row))
                 self.tiles[row].grid(row=row, column=column, padx=1, pady=1, sticky="NSEW")
                 self.tile_icons[row+column*self.grid_size] = PhotoImage(file="grass.png")
                 self.tile_labels[row+column*self.grid_size] = ttk.Button(self.tiles[row], image=self.tile_icons[row+column*self.grid_size], command=lambda c=column, r=row: self.poke(c, r))
                 self.tile_labels[row+column*self.grid_size].grid(row=1, column=0, padx=0, pady=0, sticky="NSEW")
+        self.update_map()
+
+    def update_map(self):
+        message = ""
+        for column in range(self.grid_size):
+            for row in range(self.grid_size):
+                message += "map_u,{},{},".format(column, row)
+        print(self.send_request(message))
+        exit()
 
         def receiver():
-            print("hello")
-            self.root.after(100, receiver)
-
+            self.root.after(1000, receiver)
         receiver()
 
 
