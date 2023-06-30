@@ -142,31 +142,31 @@ class ServerThread(threading.Thread):
     def run(self):
         print("Connection from : " + self.ip + ":" + str(self.port))
         while True:
-            #try:
-            # Receive and expire if dead
-            self.msg = serversock.recv(16384)
-            if self.msg == b'':
-                self.counter += 0.2
-                time.sleep(0.2)
-                if self.counter >= self.timeout:
-                    break
-                continue
+            try:
+                # Receive and expire if dead
+                self.msg = serversock.recv(16384)
+                if self.msg == b'':
+                    self.counter += 0.2
+                    time.sleep(0.2)
+                    if self.counter >= self.timeout:
+                        break
+                    continue
 
-            self.password = server.decrypt_msg(self.msg[0:256])
-            self.encryptor = AESCipher(str(self.password))
-            self.msg = self.encryptor.decrypt(self.msg[256:])
+                self.password = server.decrypt_msg(self.msg[0:256])
+                self.encryptor = AESCipher(str(self.password))
+                self.msg = self.encryptor.decrypt(self.msg[256:])
 
-            print('received "%s"' % self.msg)
-            print("Processing request")
-            # Do shit here
-            self.response = game.process_request(self.msg, self.password)
+                print('received "%s"' % self.msg)
+                print("Processing request")
+                # Do shit here
+                self.response = game.process_request(self.msg, self.password)
 
-            # Response
-            print('sending data back to the client')
-            serversock.sendall(self.encryptor.encrypt(self.response))  # Pass str into encryptor
-            self.counter = 0
-            #except Exception as e:
-            #    print("Failure occurred: {}".format(e))
+                # Response
+                print('sending data back to the client')
+                serversock.sendall(self.encryptor.encrypt(self.response))  # Pass str into encryptor
+                self.counter = 0
+            except Exception as e:
+                print("Failure occurred: {}".format(e))
         print("[-] Client disconnected...")
         print("[-] Thread stopped for " + self.ip + ":" + str(self.port))
 
