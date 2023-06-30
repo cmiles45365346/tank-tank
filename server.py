@@ -66,8 +66,7 @@ class Server:
 # Stuff you read
 class Game:
     def __init__(self):
-        self.passwords = []
-        self.usernames = {}
+        self.usernames = []
         self.points = {}
         self.health = {}
         self.tiles = {}
@@ -80,7 +79,7 @@ class Game:
             for row in range(self.grid_size):
                 self.tiles[row + column * self.grid_size] = "grass"
 
-    def process_request(self, msg, password):
+    def process_request(self, msg, username):
         msg = msg.lower()
         command_chain = []
         command = ""
@@ -91,24 +90,22 @@ class Game:
                 command = ""
             else:
                 command += letter
-        for item in range(len(command_chain)):
-            if command_chain[item] == "register":
-                if not self.passwords.__contains__(password):
-                    self.passwords.append(password)
-                    self.points[password] = 0
-                    self.health[password] = 3
-                    response += "acknowledged" + ','
-                response += "acknowledged" + ','
-            if command_chain[item] == "hello":
-                response += "Hi lmao" + ','
-            if command_chain[item] == "clicked_on":
-                response += "clicked_on,{},{}".format(command_chain[item+1], command_chain[item+2]) + ','
+        for item in range(len(command_chain)):  # Start processing command_chain here
             if command_chain[item] == "map":
                 response += "map," + str(command_chain[item+1]) + "," + str(command_chain[item+2]) + "," + self.tiles[
                     command_chain[item+1] + command_chain[item+2] * self.grid_size] + ','
-            if command_chain[item] == "mapSize":
+            elif command_chain[item] == "register":
+                if not self.usernames.__contains__(username):
+                    self.usernames.append(username)
+                    self.points[username] = 0
+                    self.health[username] = 3
+                    response += "acknowledged" + ','
+                response += "acknowledged" + ','
+            elif command_chain[item] == "clicked_on":
+                response += "clicked_on,{},{}".format(command_chain[item+1], command_chain[item+2]) + ','
+            elif command_chain[item] == "mapSize":
                 response += str(self.grid_size) + ','
-            if command_chain[item] == "points":
+            elif command_chain[item] == "points":
                 pass
         return response  # What client sees
 
